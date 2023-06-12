@@ -3,4 +3,5 @@
 
 float HUMIDITY = NAN;
 float TEMPERATURE = NAN;
+int VALUEA0 = 0;
 DHT DHTSENSOR;

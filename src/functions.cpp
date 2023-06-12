@@ -41,7 +41,7 @@ long ReadVcc() {
   return adc_result; // Vcc in millivolts
 }
 
-void ReadDHTSensor()
+void ReadDHTSensorORIGINAL()
 {
   float t = DHTSENSOR.getTemperature();
   float h = DHTSENSOR.getHumidity();
@@ -56,6 +56,36 @@ void ReadDHTSensor()
   Serial.println(" %");
   Serial.print(TEMPERATURE);
   Serial.println(" °C");
+}
+
+void ReadDHTSensor()
+{
+  float t = DHTSENSOR.getTemperature();
+  float h = DHTSENSOR.getHumidity();
+
+  Serial.print("DHT: ");
+  const char* status;
+  status=DHTSENSOR.getStatusString();
+  Serial.println(status);
+  Serial.print("DHT Model: ");
+  Serial.println(DHTSENSOR.getModel());
+    
+  HUMIDITY = h;
+  TEMPERATURE = t;
+
+  Serial.print(HUMIDITY);
+  Serial.println(" %");
+  Serial.print(TEMPERATURE);
+  Serial.println(" °C");
+}
+
+void ReadA0()
+{
+  // Leo el valor de A0
+  int a0 = analogRead(A0);
+  VALUEA0 = a0;
+  Serial.print("A0: ");
+  Serial.println(VALUEA0);
 }
 
 void PrintResetReason()

@@ -9,4 +9,5 @@ extern volatile int POWER_DOWN_SLEEP_COUNTER;
 extern float HUMIDITY;
 extern float TEMPERATURE;
 extern DHT DHTSENSOR;
+extern int VALUEA0;
 #endif

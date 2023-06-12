@@ -12,10 +12,10 @@ const lmic_pinmap lmic_pins = {
     .nss = PIN_LMIC_NSS,
     .rxtx = LMIC_UNUSED_PIN,
     .rst = PIN_LMIC_RST,
-    .dio = {PIN_LMIC_DIO0, PIN_LMIC_DIO1, PIN_LMIC_DIO2},
+    .dio = {PIN_LMIC_DIO0, PIN_LMIC_DIO1, LMIC_UNUSED_PIN},
 };
 
-static uint8_t LORA_DATA[4];
+static uint8_t LORA_DATA[5]; // Subí de 4 a 5 bytes para que entre todo.
 
 // Schedule TX every this many seconds (might become longer due to duty cycle limitations).
 const unsigned TX_INTERVAL = LORA_TX_INTERVAL;
@@ -28,7 +28,7 @@ bool GO_DEEP_SLEEP = false;
 
 void LoRaWANSetup()
 {
-    Serial.println(F("LoRaWAN_Setup ..."));
+    Serial.println(F("LoRaWAN_Setup"));
 
     // LMIC init
     os_init();
@@ -36,8 +36,12 @@ void LoRaWANSetup()
     // Reset the MAC state. Session and pending data transfers will be discarded.
     LMIC_reset();
 
+    // Guille - Sin esto funciona, pero no tan bien. Tarda en hacer el join, evidentemente prueba en otras frecuencias también.
+    LMIC_selectSubBand(0);
+    //
+
     // Let LMIC compensate for +/- 1% clock error
-    LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100);
+    LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100);
 
     // Start job
     LoRaWANDo_send(&sendjob);
@@ -61,10 +65,13 @@ void LoRaWANDo_send(osjob_t *j)
     // Next TX is scheduled after TX_COMPLETE event.
 }
 
+
+
 void onEvent(ev_t ev)
 {
     Serial.print(os_getTime());
     Serial.print(": ");
+
     switch (ev)
     {
     case EV_SCAN_TIMEOUT:
@@ -191,8 +198,10 @@ void LoRaWANDo(void)
 {
     if (GO_DEEP_SLEEP == true)
     {
-        PowerDownTXIntervall();
-        GO_DEEP_SLEEP = false;
+        if(millis() > 30000) {  // los primeros 30 segundos no duermo. entiendo que tiene que hacer cosas de lora al principio y luego se estabiliza
+            PowerDownTXIntervall();
+            GO_DEEP_SLEEP = false;
+        } else { os_runloop_once(); }
     }
     else
     {
@@ -203,12 +212,15 @@ void LoRaWANDo(void)
 void LoRaWANGetData()
 {
     ReadDHTSensor();
+    ReadA0();
 
-    uint8_t vcc = (ReadVcc() / 10) - 200;
+    //uint8_t vcc = (ReadVcc() / 10) - 200;
 
-    uint8_t humidity_lora = HUMIDITY;
-
+    uint8_t humidity_lora = int(HUMIDITY); // de repente empezó a tirar decimales DHT y como no tiene tanta resolucion lo redondeo acá
     int16_t temp = (TEMPERATURE * 10);
+
+    LORA_DATA[0] = highByte(VALUEA0);
+    LORA_DATA[1] = lowByte(VALUEA0);
 
     if (isnan(TEMPERATURE))
     {
@@ -223,25 +235,25 @@ void LoRaWANGetData()
 
     if (isnan(HUMIDITY))
     {
-        LORA_DATA[1] = 255;
+        LORA_DATA[4] = 255;
     }
     else
     {
-        float check = HUMIDITY - humidity_lora;
-        LORA_DATA[1] = humidity_lora;
+//        float check = HUMIDITY - humidity_lora;
+        LORA_DATA[4] = humidity_lora;
 
         // Bit 8 for decimal 1 = 0.5
-        if (check > 0.251 && check < 0.751)
+  /*      if (check > 0.251 && check < 0.751)
         {
-            LORA_DATA[1] |= (1 << 7);
+            LORA_DATA[4] |= (1 << 7);
         }
         else if (check > 0.751)
         {
-            LORA_DATA[1] = LORA_DATA[1] + 1;
-        }
+            LORA_DATA[4] = LORA_DATA[4] + 1;
+        } */
     }
 
-    LORA_DATA[0] = vcc;
+    //LORA_DATA[0] = vcc;
 }
 
 void LoRaWANVersion()
