@@ -63,6 +63,15 @@ void PowerDownTXIntervall()
     }
 
     Serial.println(F("PowerUp..."));
+
+    // Guille: non blocking 3 second delay for DHT to wake up properly
+    unsigned long time_now = millis();
+    Serial.print("Powerup delay...");
+    while(millis() < time_now + 3000){
+        //wait approx. [period] ms
+    }
+    Serial.println("done!");
+
 }
 
 ISR(WDT_vect)
