@@ -79,13 +79,45 @@ void ReadDHTSensor()
   Serial.println(" °C");
 }
 
-void ReadA0()
+void ReadA0()  // Para la primera prueba. En adelante se usa ReadBoyero
 {
   // Leo el valor de A0
   int a0 = analogRead(A0);
   VALUEA0 = a0;
   Serial.print("A0: ");
   Serial.println(VALUEA0);
+}
+
+void ReadBoyero()
+{
+  // El boyero tiene un pulso por segundo
+  // Leo valores durante 1.5 segundos (ojo consumo de batería!) 
+  // para tratar de agarrar un pulso entero y me quedo con el valor mas alto.
+  // Le agregué una salida digital para poder contar los pulsos con el osciloscopio. 
+  // Me una medida cada 241us, unas 6000 medidas en los 1500ms.
+  // El resto de las mediciones y la transmisión de LoRA parecen no afectarse a pesar de que la lectura es, en teoria, Blocking.
+
+  // Ago2023 - agrego control del OPAMP mediante salida digital D4 (la pierdo como indicador de si corre mas abajo)
+  digitalWrite(4,true);
+  // 
+  unsigned long ahora = millis();
+  int max=0;
+  int a0;
+  int a1;
+  //bool digital=false;
+  while (millis()< ahora+1500) 
+  {
+    a0 = analogRead(A0);
+    a1 = analogRead(A1);
+    if (a0 > max) max=a0;
+    if (a1 > max) max=a1;
+    //digital = !digital;      // Esto era un indicador rudimentario para troubleshooting
+    //digitalWrite(4,digital); // le conectaba D4 al osciloscopio y veia cuando corria esto
+  }
+  // Ago 2023
+  digitalWrite(4,false);
+  //
+  VALUEA0 = max;
 }
 
 void PrintResetReason()

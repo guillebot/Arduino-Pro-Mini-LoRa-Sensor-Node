@@ -9,5 +9,6 @@ void Blink_Info_LED(void);
 long ReadVcc(void);
 void ReadDHTSensor(void);
 void ReadA0(void);
+void ReadBoyero(void);
 void PrintResetReason(void);
 #endif

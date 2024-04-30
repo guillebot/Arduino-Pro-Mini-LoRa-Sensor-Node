@@ -18,6 +18,11 @@ void setup()
   delay(3000);
   DHTSENSOR.setup(PIN_DHT);
   PowerDownSetupWatchdog();
+  // Opcional, para ver el muestreo en el osciloscopio.
+  // Si esto la salida funciona pero la onda no es cuadrada, queda flotando.
+  pinMode(4, OUTPUT);
+  //
+
   Setup_Pins();
   Blink_Info_LED();
   LoRaWANSetup();

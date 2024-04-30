@@ -212,7 +212,8 @@ void LoRaWANDo(void)
 void LoRaWANGetData()
 {
     ReadDHTSensor();
-    ReadA0();
+    //ReadA0();
+    ReadBoyero();
 
     //uint8_t vcc = (ReadVcc() / 10) - 200;
 
